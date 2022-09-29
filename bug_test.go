@@ -2,6 +2,7 @@ package bug
 
 import (
 	"context"
+	"entgo.io/bug/ent/leaguecertificatetype"
 	"fmt"
 	"net"
 	"strconv"
@@ -63,18 +64,30 @@ func test(t *testing.T, client *ent.Client) {
 		t.Errorf("unexpected number of users: %d", n)
 	}
 
+	client.LeagueCertificateType.Delete().ExecX(ctx)
 	client.League.Delete().ExecX(ctx)
 	client.CertificateType.Delete().ExecX(ctx)
-	client.LeagueCertificateType.Delete().ExecX(ctx)
 
-	client.League.Create().SetName("league_1").SaveX(ctx)
-	client.CertificateType.Create().SetName("cert_1").SaveX(ctx)
-	client.CertificateType.Create().SetName("cert_2").SaveX(ctx)
-	client.LeagueCertificateType.Create().SetLeagueID(1).SetCertificateTypeID(1).SaveX(ctx)
-	client.LeagueCertificateType.Create().SetLeagueID(1).SetCertificateTypeID(2).SaveX(ctx)
+	l1, err := client.League.Create().SetName("league_1").Save(ctx)
+	assert.Equal(t, nil, err)
 
-	_, err := client.Debug().League.Query().
+	c1, err := client.CertificateType.Create().SetName("cert_1").Save(ctx)
+	assert.Equal(t, nil, err)
+
+	c2, err := client.CertificateType.Create().SetName("cert_2").Save(ctx)
+	assert.Equal(t, nil, err)
+
+	_, err = client.LeagueCertificateType.Create().SetLeagueID(l1.ID).SetCertificateTypeID(c1.ID).Save(ctx)
+	assert.Equal(t, nil, err)
+
+	_, err = client.LeagueCertificateType.Create().SetLeagueID(l1.ID).SetCertificateTypeID(c2.ID).Save(ctx)
+	assert.Equal(t, nil, err)
+
+	_, err = client.Debug().League.Query().
 		WithLeagueCertificateType(func(q *ent.LeagueCertificateTypeQuery) {
+			// still wrongly selects non-existent league_certificate_type.id column
+			q.Select(leaguecertificatetype.FieldLeagueID)
+			q.Select(leaguecertificatetype.FieldCertificateTypeID)
 			q.WithCertificates()
 		}).
 		All(ctx)

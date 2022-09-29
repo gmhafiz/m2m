@@ -47,13 +47,13 @@ var (
 				Symbol:     "league_certificate_type_certificate_types_league_certificate_type_league_type_id",
 				Columns:    []*schema.Column{LeagueCertificateTypeColumns[1]},
 				RefColumns: []*schema.Column{CertificateTypesColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "league_certificate_type_leagues_league_certificate_type",
 				Columns:    []*schema.Column{LeagueCertificateTypeColumns[2]},
 				RefColumns: []*schema.Column{LeaguesColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{

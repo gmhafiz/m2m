@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -20,7 +21,10 @@ func (CertificateType) Fields() []ent.Field {
 
 func (CertificateType) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("league_certificate_type_league_type_id", LeagueCertificateType.Type),
+		edge.To("league_certificate_type_league_type_id", LeagueCertificateType.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }
 
