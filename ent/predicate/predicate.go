@@ -6,5 +6,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// CertificateType is the predicate function for certificatetype builders.
+type CertificateType func(*sql.Selector)
+
+// League is the predicate function for league builders.
+type League func(*sql.Selector)
+
+// LeagueCertificateType is the predicate function for leaguecertificatetype builders.
+type LeagueCertificateType func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

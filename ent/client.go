@@ -10,10 +10,14 @@ import (
 
 	"entgo.io/bug/ent/migrate"
 
+	"entgo.io/bug/ent/certificatetype"
+	"entgo.io/bug/ent/league"
+	"entgo.io/bug/ent/leaguecertificatetype"
 	"entgo.io/bug/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -21,6 +25,12 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// CertificateType is the client for interacting with the CertificateType builders.
+	CertificateType *CertificateTypeClient
+	// League is the client for interacting with the League builders.
+	League *LeagueClient
+	// LeagueCertificateType is the client for interacting with the LeagueCertificateType builders.
+	LeagueCertificateType *LeagueCertificateTypeClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -36,6 +46,9 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.CertificateType = NewCertificateTypeClient(c.config)
+	c.League = NewLeagueClient(c.config)
+	c.LeagueCertificateType = NewLeagueCertificateTypeClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -68,9 +81,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:                   ctx,
+		config:                cfg,
+		CertificateType:       NewCertificateTypeClient(cfg),
+		League:                NewLeagueClient(cfg),
+		LeagueCertificateType: NewLeagueCertificateTypeClient(cfg),
+		User:                  NewUserClient(cfg),
 	}, nil
 }
 
@@ -88,16 +104,19 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:                   ctx,
+		config:                cfg,
+		CertificateType:       NewCertificateTypeClient(cfg),
+		League:                NewLeagueClient(cfg),
+		LeagueCertificateType: NewLeagueCertificateTypeClient(cfg),
+		User:                  NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		CertificateType.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -119,7 +138,344 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.CertificateType.Use(hooks...)
+	c.League.Use(hooks...)
+	c.LeagueCertificateType.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// CertificateTypeClient is a client for the CertificateType schema.
+type CertificateTypeClient struct {
+	config
+}
+
+// NewCertificateTypeClient returns a client for the CertificateType from the given config.
+func NewCertificateTypeClient(c config) *CertificateTypeClient {
+	return &CertificateTypeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `certificatetype.Hooks(f(g(h())))`.
+func (c *CertificateTypeClient) Use(hooks ...Hook) {
+	c.hooks.CertificateType = append(c.hooks.CertificateType, hooks...)
+}
+
+// Create returns a builder for creating a CertificateType entity.
+func (c *CertificateTypeClient) Create() *CertificateTypeCreate {
+	mutation := newCertificateTypeMutation(c.config, OpCreate)
+	return &CertificateTypeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CertificateType entities.
+func (c *CertificateTypeClient) CreateBulk(builders ...*CertificateTypeCreate) *CertificateTypeCreateBulk {
+	return &CertificateTypeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CertificateType.
+func (c *CertificateTypeClient) Update() *CertificateTypeUpdate {
+	mutation := newCertificateTypeMutation(c.config, OpUpdate)
+	return &CertificateTypeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CertificateTypeClient) UpdateOne(ct *CertificateType) *CertificateTypeUpdateOne {
+	mutation := newCertificateTypeMutation(c.config, OpUpdateOne, withCertificateType(ct))
+	return &CertificateTypeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CertificateTypeClient) UpdateOneID(id uint64) *CertificateTypeUpdateOne {
+	mutation := newCertificateTypeMutation(c.config, OpUpdateOne, withCertificateTypeID(id))
+	return &CertificateTypeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CertificateType.
+func (c *CertificateTypeClient) Delete() *CertificateTypeDelete {
+	mutation := newCertificateTypeMutation(c.config, OpDelete)
+	return &CertificateTypeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CertificateTypeClient) DeleteOne(ct *CertificateType) *CertificateTypeDeleteOne {
+	return c.DeleteOneID(ct.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *CertificateTypeClient) DeleteOneID(id uint64) *CertificateTypeDeleteOne {
+	builder := c.Delete().Where(certificatetype.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CertificateTypeDeleteOne{builder}
+}
+
+// Query returns a query builder for CertificateType.
+func (c *CertificateTypeClient) Query() *CertificateTypeQuery {
+	return &CertificateTypeQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a CertificateType entity by its id.
+func (c *CertificateTypeClient) Get(ctx context.Context, id uint64) (*CertificateType, error) {
+	return c.Query().Where(certificatetype.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CertificateTypeClient) GetX(ctx context.Context, id uint64) *CertificateType {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLeagueCertificateTypeLeagueTypeID queries the league_certificate_type_league_type_id edge of a CertificateType.
+func (c *CertificateTypeClient) QueryLeagueCertificateTypeLeagueTypeID(ct *CertificateType) *LeagueCertificateTypeQuery {
+	query := &LeagueCertificateTypeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ct.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(certificatetype.Table, certificatetype.FieldID, id),
+			sqlgraph.To(leaguecertificatetype.Table, leaguecertificatetype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, certificatetype.LeagueCertificateTypeLeagueTypeIDTable, certificatetype.LeagueCertificateTypeLeagueTypeIDColumn),
+		)
+		fromV = sqlgraph.Neighbors(ct.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CertificateTypeClient) Hooks() []Hook {
+	return c.hooks.CertificateType
+}
+
+// LeagueClient is a client for the League schema.
+type LeagueClient struct {
+	config
+}
+
+// NewLeagueClient returns a client for the League from the given config.
+func NewLeagueClient(c config) *LeagueClient {
+	return &LeagueClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `league.Hooks(f(g(h())))`.
+func (c *LeagueClient) Use(hooks ...Hook) {
+	c.hooks.League = append(c.hooks.League, hooks...)
+}
+
+// Create returns a builder for creating a League entity.
+func (c *LeagueClient) Create() *LeagueCreate {
+	mutation := newLeagueMutation(c.config, OpCreate)
+	return &LeagueCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of League entities.
+func (c *LeagueClient) CreateBulk(builders ...*LeagueCreate) *LeagueCreateBulk {
+	return &LeagueCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for League.
+func (c *LeagueClient) Update() *LeagueUpdate {
+	mutation := newLeagueMutation(c.config, OpUpdate)
+	return &LeagueUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LeagueClient) UpdateOne(l *League) *LeagueUpdateOne {
+	mutation := newLeagueMutation(c.config, OpUpdateOne, withLeague(l))
+	return &LeagueUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LeagueClient) UpdateOneID(id uint64) *LeagueUpdateOne {
+	mutation := newLeagueMutation(c.config, OpUpdateOne, withLeagueID(id))
+	return &LeagueUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for League.
+func (c *LeagueClient) Delete() *LeagueDelete {
+	mutation := newLeagueMutation(c.config, OpDelete)
+	return &LeagueDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LeagueClient) DeleteOne(l *League) *LeagueDeleteOne {
+	return c.DeleteOneID(l.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *LeagueClient) DeleteOneID(id uint64) *LeagueDeleteOne {
+	builder := c.Delete().Where(league.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LeagueDeleteOne{builder}
+}
+
+// Query returns a query builder for League.
+func (c *LeagueClient) Query() *LeagueQuery {
+	return &LeagueQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a League entity by its id.
+func (c *LeagueClient) Get(ctx context.Context, id uint64) (*League, error) {
+	return c.Query().Where(league.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LeagueClient) GetX(ctx context.Context, id uint64) *League {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLeagueCertificateType queries the league_certificate_type edge of a League.
+func (c *LeagueClient) QueryLeagueCertificateType(l *League) *LeagueCertificateTypeQuery {
+	query := &LeagueCertificateTypeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := l.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(league.Table, league.FieldID, id),
+			sqlgraph.To(leaguecertificatetype.Table, leaguecertificatetype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, league.LeagueCertificateTypeTable, league.LeagueCertificateTypeColumn),
+		)
+		fromV = sqlgraph.Neighbors(l.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LeagueClient) Hooks() []Hook {
+	return c.hooks.League
+}
+
+// LeagueCertificateTypeClient is a client for the LeagueCertificateType schema.
+type LeagueCertificateTypeClient struct {
+	config
+}
+
+// NewLeagueCertificateTypeClient returns a client for the LeagueCertificateType from the given config.
+func NewLeagueCertificateTypeClient(c config) *LeagueCertificateTypeClient {
+	return &LeagueCertificateTypeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `leaguecertificatetype.Hooks(f(g(h())))`.
+func (c *LeagueCertificateTypeClient) Use(hooks ...Hook) {
+	c.hooks.LeagueCertificateType = append(c.hooks.LeagueCertificateType, hooks...)
+}
+
+// Create returns a builder for creating a LeagueCertificateType entity.
+func (c *LeagueCertificateTypeClient) Create() *LeagueCertificateTypeCreate {
+	mutation := newLeagueCertificateTypeMutation(c.config, OpCreate)
+	return &LeagueCertificateTypeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LeagueCertificateType entities.
+func (c *LeagueCertificateTypeClient) CreateBulk(builders ...*LeagueCertificateTypeCreate) *LeagueCertificateTypeCreateBulk {
+	return &LeagueCertificateTypeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LeagueCertificateType.
+func (c *LeagueCertificateTypeClient) Update() *LeagueCertificateTypeUpdate {
+	mutation := newLeagueCertificateTypeMutation(c.config, OpUpdate)
+	return &LeagueCertificateTypeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LeagueCertificateTypeClient) UpdateOne(lct *LeagueCertificateType) *LeagueCertificateTypeUpdateOne {
+	mutation := newLeagueCertificateTypeMutation(c.config, OpUpdateOne, withLeagueCertificateType(lct))
+	return &LeagueCertificateTypeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LeagueCertificateTypeClient) UpdateOneID(id int) *LeagueCertificateTypeUpdateOne {
+	mutation := newLeagueCertificateTypeMutation(c.config, OpUpdateOne, withLeagueCertificateTypeID(id))
+	return &LeagueCertificateTypeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LeagueCertificateType.
+func (c *LeagueCertificateTypeClient) Delete() *LeagueCertificateTypeDelete {
+	mutation := newLeagueCertificateTypeMutation(c.config, OpDelete)
+	return &LeagueCertificateTypeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LeagueCertificateTypeClient) DeleteOne(lct *LeagueCertificateType) *LeagueCertificateTypeDeleteOne {
+	return c.DeleteOneID(lct.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *LeagueCertificateTypeClient) DeleteOneID(id int) *LeagueCertificateTypeDeleteOne {
+	builder := c.Delete().Where(leaguecertificatetype.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LeagueCertificateTypeDeleteOne{builder}
+}
+
+// Query returns a query builder for LeagueCertificateType.
+func (c *LeagueCertificateTypeClient) Query() *LeagueCertificateTypeQuery {
+	return &LeagueCertificateTypeQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a LeagueCertificateType entity by its id.
+func (c *LeagueCertificateTypeClient) Get(ctx context.Context, id int) (*LeagueCertificateType, error) {
+	return c.Query().Where(leaguecertificatetype.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LeagueCertificateTypeClient) GetX(ctx context.Context, id int) *LeagueCertificateType {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLeague queries the league edge of a LeagueCertificateType.
+func (c *LeagueCertificateTypeClient) QueryLeague(lct *LeagueCertificateType) *LeagueQuery {
+	query := &LeagueQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := lct.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaguecertificatetype.Table, leaguecertificatetype.FieldID, id),
+			sqlgraph.To(league.Table, league.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaguecertificatetype.LeagueTable, leaguecertificatetype.LeagueColumn),
+		)
+		fromV = sqlgraph.Neighbors(lct.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCertificates queries the certificates edge of a LeagueCertificateType.
+func (c *LeagueCertificateTypeClient) QueryCertificates(lct *LeagueCertificateType) *CertificateTypeQuery {
+	query := &CertificateTypeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := lct.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaguecertificatetype.Table, leaguecertificatetype.FieldID, id),
+			sqlgraph.To(certificatetype.Table, certificatetype.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaguecertificatetype.CertificatesTable, leaguecertificatetype.CertificatesColumn),
+		)
+		fromV = sqlgraph.Neighbors(lct.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LeagueCertificateTypeClient) Hooks() []Hook {
+	return c.hooks.LeagueCertificateType
 }
 
 // UserClient is a client for the User schema.

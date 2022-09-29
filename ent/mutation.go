@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"sync"
 
+	"entgo.io/bug/ent/certificatetype"
+	"entgo.io/bug/ent/league"
+	"entgo.io/bug/ent/leaguecertificatetype"
 	"entgo.io/bug/ent/predicate"
 	"entgo.io/bug/ent/user"
 
@@ -23,8 +26,1310 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeUser = "User"
+	TypeCertificateType       = "CertificateType"
+	TypeLeague                = "League"
+	TypeLeagueCertificateType = "LeagueCertificateType"
+	TypeUser                  = "User"
 )
+
+// CertificateTypeMutation represents an operation that mutates the CertificateType nodes in the graph.
+type CertificateTypeMutation struct {
+	config
+	op                                            Op
+	typ                                           string
+	id                                            *uint64
+	name                                          *string
+	clearedFields                                 map[string]struct{}
+	league_certificate_type_league_type_id        map[int]struct{}
+	removedleague_certificate_type_league_type_id map[int]struct{}
+	clearedleague_certificate_type_league_type_id bool
+	done                                          bool
+	oldValue                                      func(context.Context) (*CertificateType, error)
+	predicates                                    []predicate.CertificateType
+}
+
+var _ ent.Mutation = (*CertificateTypeMutation)(nil)
+
+// certificatetypeOption allows management of the mutation configuration using functional options.
+type certificatetypeOption func(*CertificateTypeMutation)
+
+// newCertificateTypeMutation creates new mutation for the CertificateType entity.
+func newCertificateTypeMutation(c config, op Op, opts ...certificatetypeOption) *CertificateTypeMutation {
+	m := &CertificateTypeMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCertificateType,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCertificateTypeID sets the ID field of the mutation.
+func withCertificateTypeID(id uint64) certificatetypeOption {
+	return func(m *CertificateTypeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CertificateType
+		)
+		m.oldValue = func(ctx context.Context) (*CertificateType, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CertificateType.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCertificateType sets the old CertificateType of the mutation.
+func withCertificateType(node *CertificateType) certificatetypeOption {
+	return func(m *CertificateTypeMutation) {
+		m.oldValue = func(context.Context) (*CertificateType, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CertificateTypeMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CertificateTypeMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of CertificateType entities.
+func (m *CertificateTypeMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CertificateTypeMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CertificateTypeMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CertificateType.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *CertificateTypeMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *CertificateTypeMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the CertificateType entity.
+// If the CertificateType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CertificateTypeMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *CertificateTypeMutation) ResetName() {
+	m.name = nil
+}
+
+// AddLeagueCertificateTypeLeagueTypeIDIDs adds the "league_certificate_type_league_type_id" edge to the LeagueCertificateType entity by ids.
+func (m *CertificateTypeMutation) AddLeagueCertificateTypeLeagueTypeIDIDs(ids ...int) {
+	if m.league_certificate_type_league_type_id == nil {
+		m.league_certificate_type_league_type_id = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.league_certificate_type_league_type_id[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLeagueCertificateTypeLeagueTypeID clears the "league_certificate_type_league_type_id" edge to the LeagueCertificateType entity.
+func (m *CertificateTypeMutation) ClearLeagueCertificateTypeLeagueTypeID() {
+	m.clearedleague_certificate_type_league_type_id = true
+}
+
+// LeagueCertificateTypeLeagueTypeIDCleared reports if the "league_certificate_type_league_type_id" edge to the LeagueCertificateType entity was cleared.
+func (m *CertificateTypeMutation) LeagueCertificateTypeLeagueTypeIDCleared() bool {
+	return m.clearedleague_certificate_type_league_type_id
+}
+
+// RemoveLeagueCertificateTypeLeagueTypeIDIDs removes the "league_certificate_type_league_type_id" edge to the LeagueCertificateType entity by IDs.
+func (m *CertificateTypeMutation) RemoveLeagueCertificateTypeLeagueTypeIDIDs(ids ...int) {
+	if m.removedleague_certificate_type_league_type_id == nil {
+		m.removedleague_certificate_type_league_type_id = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.league_certificate_type_league_type_id, ids[i])
+		m.removedleague_certificate_type_league_type_id[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLeagueCertificateTypeLeagueTypeID returns the removed IDs of the "league_certificate_type_league_type_id" edge to the LeagueCertificateType entity.
+func (m *CertificateTypeMutation) RemovedLeagueCertificateTypeLeagueTypeIDIDs() (ids []int) {
+	for id := range m.removedleague_certificate_type_league_type_id {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LeagueCertificateTypeLeagueTypeIDIDs returns the "league_certificate_type_league_type_id" edge IDs in the mutation.
+func (m *CertificateTypeMutation) LeagueCertificateTypeLeagueTypeIDIDs() (ids []int) {
+	for id := range m.league_certificate_type_league_type_id {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLeagueCertificateTypeLeagueTypeID resets all changes to the "league_certificate_type_league_type_id" edge.
+func (m *CertificateTypeMutation) ResetLeagueCertificateTypeLeagueTypeID() {
+	m.league_certificate_type_league_type_id = nil
+	m.clearedleague_certificate_type_league_type_id = false
+	m.removedleague_certificate_type_league_type_id = nil
+}
+
+// Where appends a list predicates to the CertificateTypeMutation builder.
+func (m *CertificateTypeMutation) Where(ps ...predicate.CertificateType) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *CertificateTypeMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (CertificateType).
+func (m *CertificateTypeMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CertificateTypeMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.name != nil {
+		fields = append(fields, certificatetype.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CertificateTypeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case certificatetype.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CertificateTypeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case certificatetype.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown CertificateType field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CertificateTypeMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case certificatetype.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CertificateType field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CertificateTypeMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CertificateTypeMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CertificateTypeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown CertificateType numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CertificateTypeMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CertificateTypeMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CertificateTypeMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown CertificateType nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CertificateTypeMutation) ResetField(name string) error {
+	switch name {
+	case certificatetype.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown CertificateType field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CertificateTypeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.league_certificate_type_league_type_id != nil {
+		edges = append(edges, certificatetype.EdgeLeagueCertificateTypeLeagueTypeID)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CertificateTypeMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case certificatetype.EdgeLeagueCertificateTypeLeagueTypeID:
+		ids := make([]ent.Value, 0, len(m.league_certificate_type_league_type_id))
+		for id := range m.league_certificate_type_league_type_id {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CertificateTypeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedleague_certificate_type_league_type_id != nil {
+		edges = append(edges, certificatetype.EdgeLeagueCertificateTypeLeagueTypeID)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CertificateTypeMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case certificatetype.EdgeLeagueCertificateTypeLeagueTypeID:
+		ids := make([]ent.Value, 0, len(m.removedleague_certificate_type_league_type_id))
+		for id := range m.removedleague_certificate_type_league_type_id {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CertificateTypeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedleague_certificate_type_league_type_id {
+		edges = append(edges, certificatetype.EdgeLeagueCertificateTypeLeagueTypeID)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CertificateTypeMutation) EdgeCleared(name string) bool {
+	switch name {
+	case certificatetype.EdgeLeagueCertificateTypeLeagueTypeID:
+		return m.clearedleague_certificate_type_league_type_id
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CertificateTypeMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown CertificateType unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CertificateTypeMutation) ResetEdge(name string) error {
+	switch name {
+	case certificatetype.EdgeLeagueCertificateTypeLeagueTypeID:
+		m.ResetLeagueCertificateTypeLeagueTypeID()
+		return nil
+	}
+	return fmt.Errorf("unknown CertificateType edge %s", name)
+}
+
+// LeagueMutation represents an operation that mutates the League nodes in the graph.
+type LeagueMutation struct {
+	config
+	op                             Op
+	typ                            string
+	id                             *uint64
+	name                           *string
+	clearedFields                  map[string]struct{}
+	league_certificate_type        map[int]struct{}
+	removedleague_certificate_type map[int]struct{}
+	clearedleague_certificate_type bool
+	done                           bool
+	oldValue                       func(context.Context) (*League, error)
+	predicates                     []predicate.League
+}
+
+var _ ent.Mutation = (*LeagueMutation)(nil)
+
+// leagueOption allows management of the mutation configuration using functional options.
+type leagueOption func(*LeagueMutation)
+
+// newLeagueMutation creates new mutation for the League entity.
+func newLeagueMutation(c config, op Op, opts ...leagueOption) *LeagueMutation {
+	m := &LeagueMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLeague,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLeagueID sets the ID field of the mutation.
+func withLeagueID(id uint64) leagueOption {
+	return func(m *LeagueMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *League
+		)
+		m.oldValue = func(ctx context.Context) (*League, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().League.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLeague sets the old League of the mutation.
+func withLeague(node *League) leagueOption {
+	return func(m *LeagueMutation) {
+		m.oldValue = func(context.Context) (*League, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LeagueMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LeagueMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of League entities.
+func (m *LeagueMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LeagueMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LeagueMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().League.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *LeagueMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *LeagueMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the League entity.
+// If the League object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LeagueMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *LeagueMutation) ResetName() {
+	m.name = nil
+}
+
+// AddLeagueCertificateTypeIDs adds the "league_certificate_type" edge to the LeagueCertificateType entity by ids.
+func (m *LeagueMutation) AddLeagueCertificateTypeIDs(ids ...int) {
+	if m.league_certificate_type == nil {
+		m.league_certificate_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.league_certificate_type[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLeagueCertificateType clears the "league_certificate_type" edge to the LeagueCertificateType entity.
+func (m *LeagueMutation) ClearLeagueCertificateType() {
+	m.clearedleague_certificate_type = true
+}
+
+// LeagueCertificateTypeCleared reports if the "league_certificate_type" edge to the LeagueCertificateType entity was cleared.
+func (m *LeagueMutation) LeagueCertificateTypeCleared() bool {
+	return m.clearedleague_certificate_type
+}
+
+// RemoveLeagueCertificateTypeIDs removes the "league_certificate_type" edge to the LeagueCertificateType entity by IDs.
+func (m *LeagueMutation) RemoveLeagueCertificateTypeIDs(ids ...int) {
+	if m.removedleague_certificate_type == nil {
+		m.removedleague_certificate_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.league_certificate_type, ids[i])
+		m.removedleague_certificate_type[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLeagueCertificateType returns the removed IDs of the "league_certificate_type" edge to the LeagueCertificateType entity.
+func (m *LeagueMutation) RemovedLeagueCertificateTypeIDs() (ids []int) {
+	for id := range m.removedleague_certificate_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LeagueCertificateTypeIDs returns the "league_certificate_type" edge IDs in the mutation.
+func (m *LeagueMutation) LeagueCertificateTypeIDs() (ids []int) {
+	for id := range m.league_certificate_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLeagueCertificateType resets all changes to the "league_certificate_type" edge.
+func (m *LeagueMutation) ResetLeagueCertificateType() {
+	m.league_certificate_type = nil
+	m.clearedleague_certificate_type = false
+	m.removedleague_certificate_type = nil
+}
+
+// Where appends a list predicates to the LeagueMutation builder.
+func (m *LeagueMutation) Where(ps ...predicate.League) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *LeagueMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (League).
+func (m *LeagueMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LeagueMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.name != nil {
+		fields = append(fields, league.FieldName)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LeagueMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case league.FieldName:
+		return m.Name()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LeagueMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case league.FieldName:
+		return m.OldName(ctx)
+	}
+	return nil, fmt.Errorf("unknown League field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LeagueMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case league.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	}
+	return fmt.Errorf("unknown League field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LeagueMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LeagueMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LeagueMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown League numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LeagueMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LeagueMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LeagueMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown League nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LeagueMutation) ResetField(name string) error {
+	switch name {
+	case league.FieldName:
+		m.ResetName()
+		return nil
+	}
+	return fmt.Errorf("unknown League field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LeagueMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.league_certificate_type != nil {
+		edges = append(edges, league.EdgeLeagueCertificateType)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LeagueMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case league.EdgeLeagueCertificateType:
+		ids := make([]ent.Value, 0, len(m.league_certificate_type))
+		for id := range m.league_certificate_type {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LeagueMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedleague_certificate_type != nil {
+		edges = append(edges, league.EdgeLeagueCertificateType)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LeagueMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case league.EdgeLeagueCertificateType:
+		ids := make([]ent.Value, 0, len(m.removedleague_certificate_type))
+		for id := range m.removedleague_certificate_type {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LeagueMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedleague_certificate_type {
+		edges = append(edges, league.EdgeLeagueCertificateType)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LeagueMutation) EdgeCleared(name string) bool {
+	switch name {
+	case league.EdgeLeagueCertificateType:
+		return m.clearedleague_certificate_type
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LeagueMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown League unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LeagueMutation) ResetEdge(name string) error {
+	switch name {
+	case league.EdgeLeagueCertificateType:
+		m.ResetLeagueCertificateType()
+		return nil
+	}
+	return fmt.Errorf("unknown League edge %s", name)
+}
+
+// LeagueCertificateTypeMutation represents an operation that mutates the LeagueCertificateType nodes in the graph.
+type LeagueCertificateTypeMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *int
+	clearedFields       map[string]struct{}
+	league              *uint64
+	clearedleague       bool
+	certificates        *uint64
+	clearedcertificates bool
+	done                bool
+	oldValue            func(context.Context) (*LeagueCertificateType, error)
+	predicates          []predicate.LeagueCertificateType
+}
+
+var _ ent.Mutation = (*LeagueCertificateTypeMutation)(nil)
+
+// leaguecertificatetypeOption allows management of the mutation configuration using functional options.
+type leaguecertificatetypeOption func(*LeagueCertificateTypeMutation)
+
+// newLeagueCertificateTypeMutation creates new mutation for the LeagueCertificateType entity.
+func newLeagueCertificateTypeMutation(c config, op Op, opts ...leaguecertificatetypeOption) *LeagueCertificateTypeMutation {
+	m := &LeagueCertificateTypeMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLeagueCertificateType,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLeagueCertificateTypeID sets the ID field of the mutation.
+func withLeagueCertificateTypeID(id int) leaguecertificatetypeOption {
+	return func(m *LeagueCertificateTypeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *LeagueCertificateType
+		)
+		m.oldValue = func(ctx context.Context) (*LeagueCertificateType, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().LeagueCertificateType.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLeagueCertificateType sets the old LeagueCertificateType of the mutation.
+func withLeagueCertificateType(node *LeagueCertificateType) leaguecertificatetypeOption {
+	return func(m *LeagueCertificateTypeMutation) {
+		m.oldValue = func(context.Context) (*LeagueCertificateType, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LeagueCertificateTypeMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LeagueCertificateTypeMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LeagueCertificateTypeMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *LeagueCertificateTypeMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().LeagueCertificateType.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetLeagueID sets the "league_id" field.
+func (m *LeagueCertificateTypeMutation) SetLeagueID(u uint64) {
+	m.league = &u
+}
+
+// LeagueID returns the value of the "league_id" field in the mutation.
+func (m *LeagueCertificateTypeMutation) LeagueID() (r uint64, exists bool) {
+	v := m.league
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLeagueID returns the old "league_id" field's value of the LeagueCertificateType entity.
+// If the LeagueCertificateType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LeagueCertificateTypeMutation) OldLeagueID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLeagueID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLeagueID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLeagueID: %w", err)
+	}
+	return oldValue.LeagueID, nil
+}
+
+// ResetLeagueID resets all changes to the "league_id" field.
+func (m *LeagueCertificateTypeMutation) ResetLeagueID() {
+	m.league = nil
+}
+
+// SetCertificateTypeID sets the "certificate_type_id" field.
+func (m *LeagueCertificateTypeMutation) SetCertificateTypeID(u uint64) {
+	m.certificates = &u
+}
+
+// CertificateTypeID returns the value of the "certificate_type_id" field in the mutation.
+func (m *LeagueCertificateTypeMutation) CertificateTypeID() (r uint64, exists bool) {
+	v := m.certificates
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCertificateTypeID returns the old "certificate_type_id" field's value of the LeagueCertificateType entity.
+// If the LeagueCertificateType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LeagueCertificateTypeMutation) OldCertificateTypeID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCertificateTypeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCertificateTypeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCertificateTypeID: %w", err)
+	}
+	return oldValue.CertificateTypeID, nil
+}
+
+// ResetCertificateTypeID resets all changes to the "certificate_type_id" field.
+func (m *LeagueCertificateTypeMutation) ResetCertificateTypeID() {
+	m.certificates = nil
+}
+
+// ClearLeague clears the "league" edge to the League entity.
+func (m *LeagueCertificateTypeMutation) ClearLeague() {
+	m.clearedleague = true
+}
+
+// LeagueCleared reports if the "league" edge to the League entity was cleared.
+func (m *LeagueCertificateTypeMutation) LeagueCleared() bool {
+	return m.clearedleague
+}
+
+// LeagueIDs returns the "league" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// LeagueID instead. It exists only for internal usage by the builders.
+func (m *LeagueCertificateTypeMutation) LeagueIDs() (ids []uint64) {
+	if id := m.league; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetLeague resets all changes to the "league" edge.
+func (m *LeagueCertificateTypeMutation) ResetLeague() {
+	m.league = nil
+	m.clearedleague = false
+}
+
+// SetCertificatesID sets the "certificates" edge to the CertificateType entity by id.
+func (m *LeagueCertificateTypeMutation) SetCertificatesID(id uint64) {
+	m.certificates = &id
+}
+
+// ClearCertificates clears the "certificates" edge to the CertificateType entity.
+func (m *LeagueCertificateTypeMutation) ClearCertificates() {
+	m.clearedcertificates = true
+}
+
+// CertificatesCleared reports if the "certificates" edge to the CertificateType entity was cleared.
+func (m *LeagueCertificateTypeMutation) CertificatesCleared() bool {
+	return m.clearedcertificates
+}
+
+// CertificatesID returns the "certificates" edge ID in the mutation.
+func (m *LeagueCertificateTypeMutation) CertificatesID() (id uint64, exists bool) {
+	if m.certificates != nil {
+		return *m.certificates, true
+	}
+	return
+}
+
+// CertificatesIDs returns the "certificates" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CertificatesID instead. It exists only for internal usage by the builders.
+func (m *LeagueCertificateTypeMutation) CertificatesIDs() (ids []uint64) {
+	if id := m.certificates; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCertificates resets all changes to the "certificates" edge.
+func (m *LeagueCertificateTypeMutation) ResetCertificates() {
+	m.certificates = nil
+	m.clearedcertificates = false
+}
+
+// Where appends a list predicates to the LeagueCertificateTypeMutation builder.
+func (m *LeagueCertificateTypeMutation) Where(ps ...predicate.LeagueCertificateType) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *LeagueCertificateTypeMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (LeagueCertificateType).
+func (m *LeagueCertificateTypeMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LeagueCertificateTypeMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.league != nil {
+		fields = append(fields, leaguecertificatetype.FieldLeagueID)
+	}
+	if m.certificates != nil {
+		fields = append(fields, leaguecertificatetype.FieldCertificateTypeID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LeagueCertificateTypeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case leaguecertificatetype.FieldLeagueID:
+		return m.LeagueID()
+	case leaguecertificatetype.FieldCertificateTypeID:
+		return m.CertificateTypeID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LeagueCertificateTypeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case leaguecertificatetype.FieldLeagueID:
+		return m.OldLeagueID(ctx)
+	case leaguecertificatetype.FieldCertificateTypeID:
+		return m.OldCertificateTypeID(ctx)
+	}
+	return nil, fmt.Errorf("unknown LeagueCertificateType field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LeagueCertificateTypeMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case leaguecertificatetype.FieldLeagueID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLeagueID(v)
+		return nil
+	case leaguecertificatetype.FieldCertificateTypeID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCertificateTypeID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown LeagueCertificateType field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LeagueCertificateTypeMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LeagueCertificateTypeMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LeagueCertificateTypeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown LeagueCertificateType numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LeagueCertificateTypeMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LeagueCertificateTypeMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LeagueCertificateTypeMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown LeagueCertificateType nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LeagueCertificateTypeMutation) ResetField(name string) error {
+	switch name {
+	case leaguecertificatetype.FieldLeagueID:
+		m.ResetLeagueID()
+		return nil
+	case leaguecertificatetype.FieldCertificateTypeID:
+		m.ResetCertificateTypeID()
+		return nil
+	}
+	return fmt.Errorf("unknown LeagueCertificateType field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LeagueCertificateTypeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.league != nil {
+		edges = append(edges, leaguecertificatetype.EdgeLeague)
+	}
+	if m.certificates != nil {
+		edges = append(edges, leaguecertificatetype.EdgeCertificates)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LeagueCertificateTypeMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case leaguecertificatetype.EdgeLeague:
+		if id := m.league; id != nil {
+			return []ent.Value{*id}
+		}
+	case leaguecertificatetype.EdgeCertificates:
+		if id := m.certificates; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LeagueCertificateTypeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LeagueCertificateTypeMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LeagueCertificateTypeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedleague {
+		edges = append(edges, leaguecertificatetype.EdgeLeague)
+	}
+	if m.clearedcertificates {
+		edges = append(edges, leaguecertificatetype.EdgeCertificates)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LeagueCertificateTypeMutation) EdgeCleared(name string) bool {
+	switch name {
+	case leaguecertificatetype.EdgeLeague:
+		return m.clearedleague
+	case leaguecertificatetype.EdgeCertificates:
+		return m.clearedcertificates
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LeagueCertificateTypeMutation) ClearEdge(name string) error {
+	switch name {
+	case leaguecertificatetype.EdgeLeague:
+		m.ClearLeague()
+		return nil
+	case leaguecertificatetype.EdgeCertificates:
+		m.ClearCertificates()
+		return nil
+	}
+	return fmt.Errorf("unknown LeagueCertificateType unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LeagueCertificateTypeMutation) ResetEdge(name string) error {
+	switch name {
+	case leaguecertificatetype.EdgeLeague:
+		m.ResetLeague()
+		return nil
+	case leaguecertificatetype.EdgeCertificates:
+		m.ResetCertificates()
+		return nil
+	}
+	return fmt.Errorf("unknown LeagueCertificateType edge %s", name)
+}
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {

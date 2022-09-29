@@ -9,6 +9,45 @@ import (
 	"entgo.io/bug/ent"
 )
 
+// The CertificateTypeFunc type is an adapter to allow the use of ordinary
+// function as CertificateType mutator.
+type CertificateTypeFunc func(context.Context, *ent.CertificateTypeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CertificateTypeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.CertificateTypeMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CertificateTypeMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The LeagueFunc type is an adapter to allow the use of ordinary
+// function as League mutator.
+type LeagueFunc func(context.Context, *ent.LeagueMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LeagueFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.LeagueMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LeagueMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The LeagueCertificateTypeFunc type is an adapter to allow the use of ordinary
+// function as LeagueCertificateType mutator.
+type LeagueCertificateTypeFunc func(context.Context, *ent.LeagueCertificateTypeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LeagueCertificateTypeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.LeagueCertificateTypeMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LeagueCertificateTypeMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

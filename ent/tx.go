@@ -12,6 +12,12 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// CertificateType is the client for interacting with the CertificateType builders.
+	CertificateType *CertificateTypeClient
+	// League is the client for interacting with the League builders.
+	League *LeagueClient
+	// LeagueCertificateType is the client for interacting with the LeagueCertificateType builders.
+	LeagueCertificateType *LeagueCertificateTypeClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -149,6 +155,9 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.CertificateType = NewCertificateTypeClient(tx.config)
+	tx.League = NewLeagueClient(tx.config)
+	tx.LeagueCertificateType = NewLeagueCertificateTypeClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 
@@ -159,7 +168,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: User.QueryXXX(), the query will be executed
+// applies a query, for example: CertificateType.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

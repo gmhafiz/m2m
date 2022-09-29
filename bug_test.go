@@ -11,6 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/assert"
 
 	"entgo.io/bug/ent"
 	"entgo.io/bug/ent/enttest"
@@ -61,4 +62,30 @@ func test(t *testing.T, client *ent.Client) {
 	if n := client.User.Query().CountX(ctx); n != 1 {
 		t.Errorf("unexpected number of users: %d", n)
 	}
+
+	client.League.Delete().ExecX(ctx)
+	client.CertificateType.Delete().ExecX(ctx)
+	client.LeagueCertificateType.Delete().ExecX(ctx)
+
+	client.League.Create().SetName("league_1").SaveX(ctx)
+	client.CertificateType.Create().SetName("cert_1").SaveX(ctx)
+	client.CertificateType.Create().SetName("cert_2").SaveX(ctx)
+	client.LeagueCertificateType.Create().SetLeagueID(1).SetCertificateTypeID(1).SaveX(ctx)
+	client.LeagueCertificateType.Create().SetLeagueID(1).SetCertificateTypeID(2).SaveX(ctx)
+
+	_, err := client.Debug().League.Query().
+		WithLeagueCertificateType(func(q *ent.LeagueCertificateTypeQuery) {
+			q.WithCertificates()
+		}).
+		All(ctx)
+	assert.Equal(t, nil, err)
+
+	/*
+		outputs non-existent id column: SELECT DISTINCT `league_certificate_type`.`id`
+
+		2022/09/29 10:06:31 driver.Query: query=SELECT DISTINCT `leagues`.`id`, `leagues`.`name` FROM `leagues` args=[]
+		2022/09/29 10:06:31 driver.Query: query=SELECT DISTINCT `league_certificate_type`.`id`, `league_certificate_type`.`league_id`, `league_certificate_type`.`certificate_type_id` FROM `league_certificate_type` WHERE `league_id` IN (?) args=[1]
+		2022/09/29 10:06:31 driver.Query: query=SELECT DISTINCT `certificate_types`.`id`, `certificate_types`.`name` FROM `certificate_types` WHERE `certificate_types`.`id` IN (?, ?) args=[1 2]
+
+	*/
 }

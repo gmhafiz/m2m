@@ -3,11 +3,67 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
 
 var (
+	// CertificateTypesColumns holds the columns for the "certificate_types" table.
+	CertificateTypesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "name", Type: field.TypeString},
+	}
+	// CertificateTypesTable holds the schema information for the "certificate_types" table.
+	CertificateTypesTable = &schema.Table{
+		Name:       "certificate_types",
+		Columns:    CertificateTypesColumns,
+		PrimaryKey: []*schema.Column{CertificateTypesColumns[0]},
+	}
+	// LeaguesColumns holds the columns for the "leagues" table.
+	LeaguesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "name", Type: field.TypeString},
+	}
+	// LeaguesTable holds the schema information for the "leagues" table.
+	LeaguesTable = &schema.Table{
+		Name:       "leagues",
+		Columns:    LeaguesColumns,
+		PrimaryKey: []*schema.Column{LeaguesColumns[0]},
+	}
+	// LeagueCertificateTypeColumns holds the columns for the "league_certificate_type" table.
+	LeagueCertificateTypeColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "certificate_type_id", Type: field.TypeUint64},
+		{Name: "league_id", Type: field.TypeUint64},
+	}
+	// LeagueCertificateTypeTable holds the schema information for the "league_certificate_type" table.
+	LeagueCertificateTypeTable = &schema.Table{
+		Name:       "league_certificate_type",
+		Columns:    LeagueCertificateTypeColumns,
+		PrimaryKey: []*schema.Column{LeagueCertificateTypeColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "league_certificate_type_certificate_types_league_certificate_type_league_type_id",
+				Columns:    []*schema.Column{LeagueCertificateTypeColumns[1]},
+				RefColumns: []*schema.Column{CertificateTypesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "league_certificate_type_leagues_league_certificate_type",
+				Columns:    []*schema.Column{LeagueCertificateTypeColumns[2]},
+				RefColumns: []*schema.Column{LeaguesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "leaguecertificatetype_league_id_certificate_type_id",
+				Unique:  true,
+				Columns: []*schema.Column{LeagueCertificateTypeColumns[2], LeagueCertificateTypeColumns[1]},
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -22,9 +78,17 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CertificateTypesTable,
+		LeaguesTable,
+		LeagueCertificateTypeTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	LeagueCertificateTypeTable.ForeignKeys[0].RefTable = CertificateTypesTable
+	LeagueCertificateTypeTable.ForeignKeys[1].RefTable = LeaguesTable
+	LeagueCertificateTypeTable.Annotation = &entsql.Annotation{
+		Table: "league_certificate_type",
+	}
 }
