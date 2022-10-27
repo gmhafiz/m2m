@@ -83,7 +83,8 @@ func test(t *testing.T, client *ent.Client) {
 	_, err = client.LeagueCertificateType.Create().SetLeagueID(l1.ID).SetCertificateTypeID(c2.ID).Save(ctx)
 	assert.Equal(t, nil, err)
 
-	_, err = client.Debug().League.Query().
+	// using previous m2m implementation
+	result, err := client.Debug().League.Query().
 		WithLeagueCertificateType(func(q *ent.LeagueCertificateTypeQuery) {
 			// still wrongly selects non-existent league_certificate_type.id column
 			q.Select(leaguecertificatetype.FieldLeagueID)
@@ -92,7 +93,7 @@ func test(t *testing.T, client *ent.Client) {
 		}).
 		All(ctx)
 	assert.Equal(t, nil, err)
-
+	t.Log(result)
 	/*
 		outputs non-existent id column: SELECT DISTINCT `league_certificate_type`.`id`
 
@@ -101,4 +102,9 @@ func test(t *testing.T, client *ent.Client) {
 		2022/09/29 10:06:31 driver.Query: query=SELECT DISTINCT `certificate_types`.`id`, `certificate_types`.`name` FROM `certificate_types` WHERE `certificate_types`.`id` IN (?, ?) args=[1 2]
 
 	*/
+
+	// using through
+	//result, err := client.Debug().League.Query().WithCertTypes().All(ctx)
+	//assert.Equal(t, nil, err)
+	//t.Log(result)
 }

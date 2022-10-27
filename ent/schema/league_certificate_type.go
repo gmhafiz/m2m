@@ -22,6 +22,8 @@ func (LeagueCertificateType) Fields() []ent.Field {
 
 func (LeagueCertificateType) Edges() []ent.Edge {
 	return []ent.Edge{
+
+		// using previous m2m implementation
 		edge.From("league", League.Type).
 			Ref("league_certificate_type").
 			Unique().
@@ -32,6 +34,16 @@ func (LeagueCertificateType) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("certificate_type_id"),
+
+		// using through
+		//edge.To("ct", CertificateType.Type).
+		//	Required().
+		//	Unique().
+		//	Field("certificate_type_id"),
+		//edge.To("l", League.Type).
+		//	Required().
+		//	Unique().
+		//	Field("league_id"),
 	}
 }
 

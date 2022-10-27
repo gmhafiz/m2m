@@ -21,10 +21,16 @@ func (CertificateType) Fields() []ent.Field {
 
 func (CertificateType) Edges() []ent.Edge {
 	return []ent.Edge{
+
+		// using previous m2m implementation
 		edge.To("league_certificate_type_league_type_id", LeagueCertificateType.Type).
 			Annotations(entsql.Annotation{
 				OnDelete: entsql.Cascade,
 			}),
+
+		// using through
+		//edge.To("l", League.Type).
+		//	Through("pivot", LeagueCertificateType.Type),
 	}
 }
 
