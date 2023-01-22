@@ -83,6 +83,10 @@ func test(t *testing.T, client *ent.Client) {
 	_, err = client.LeagueCertificateType.Create().SetLeagueID(l1.ID).SetCertificateTypeID(c2.ID).Save(ctx)
 	assert.Equal(t, nil, err)
 
+	wlc, err := client.Debug().LeagueCertificateType.Query().All(ctx)
+	assert.Equal(t, err, nil)
+	t.Log(wlc)
+
 	// using previous m2m implementation
 	result, err := client.Debug().League.Query().
 		WithLeagueCertificateType(func(q *ent.LeagueCertificateTypeQuery) {
